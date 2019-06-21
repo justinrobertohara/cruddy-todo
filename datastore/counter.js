@@ -14,7 +14,6 @@ var counter = 0;
 const zeroPaddedNumber = (num) => {
   return sprintf('%05d', num);
 };
-
 const readCounter = (callback) => {
   fs.readFile(exports.counterFile, (err, fileData) => {
     if (err) {
