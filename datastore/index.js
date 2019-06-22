@@ -31,29 +31,31 @@ exports.create = (text, callback) => {
 exports.readAll = (callback) => {
   fs.readdir(exports.dataDir, (err, files) => {
     if (err) {
-      callback(err)
+      callback(err);
     } else {
-      
       var data = [];
-      for (let i = 0; i < files.length; i++){
+      for (let i = 0; i < files.length; i++) {
         var obj = {};
-        obj['id'] = files[i].substring(0,5);
-        obj['text'] = files[i].substring(0,5);
-        data.push(obj)
+        obj['id'] = files[i].substring(0, 5);
+        obj['text'] = files[i].substring(0, 5);
+        data.push(obj);
       }
     }
     callback(null, data);
-  })
+  });
   
 };
 
 exports.readOne = (id, callback) => {
-  var text = items[id];
-  if (!text) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback(null, { id, text });
-  }
+  var fileName = exports.dataDir + '/' + id + '.txt';
+  fs.readFile(fileName, 'utf8', function(err, file) {
+    if (err) {
+      callback(new Error(`No item with id: ${id}`));
+    } else {
+      var text = file;
+      callback(null, { id, text });
+    }
+  });
 };
 
 exports.update = (id, text, callback) => {
