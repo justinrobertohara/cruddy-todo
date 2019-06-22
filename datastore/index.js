@@ -36,19 +36,16 @@ exports.readAll = (callback) => {
   return readDirPromise(exports.dataDir)
     .then(function(files) {
       var data = [];
-      //why are we timing out, the callback doesn't seem to be called
       for (let i = 0; i < files.length; i++) {
         var fileName = exports.dataDir + '/' + files[i];
         data.push(readFilePromise(fileName, 'utf8'));
       }
       return Promise.all(data).then(function(data2) {
-        //console.log('this is our data:', data2)
-        //console.log('we have read all files')
         for (var j = 0; j < data2.length; j++) {
           final.push(
             {id: files[j],
               text: data2[j]}
-          )
+          );
         }
         callback(null, final);
       });
