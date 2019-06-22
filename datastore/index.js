@@ -9,10 +9,10 @@ var items = {};
 
 exports.create = (text, callback) => {
   var id = counter.getNextUniqueId(function(err, uniqueId) {
-    if (err){
+    if (err) {
       callback(err);
     } else {
-      var fileName = exports.dataDir + '/' + uniqueId + '.txt'
+      var fileName = exports.dataDir + '/' + uniqueId + '.txt';
       fs.writeFile(fileName, text, function(err, data) {
         if (err) {
           callback(err);
@@ -29,10 +29,22 @@ exports.create = (text, callback) => {
 };
 
 exports.readAll = (callback) => {
-  var data = _.map(items, (text, id) => {
-    return { id, text };
-  });
-  callback(null, data);
+  fs.readdir(exports.dataDir, (err, files) => {
+    if (err) {
+      callback(err)
+    } else {
+      
+      var data = [];
+      for (let i = 0; i < files.length; i++){
+        var obj = {};
+        obj['id'] = files[i].substring(0,5);
+        obj['text'] = files[i].substring(0,5);
+        data.push(obj)
+      }
+    }
+    callback(null, data);
+  })
+  
 };
 
 exports.readOne = (id, callback) => {
