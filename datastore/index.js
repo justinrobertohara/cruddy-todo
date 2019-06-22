@@ -59,13 +59,23 @@ exports.readOne = (id, callback) => {
 };
 
 exports.update = (id, text, callback) => {
-  var item = items[id];
-  if (!item) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    items[id] = text;
-    callback(null, { id, text });
-  }
+  // var item = items[id];
+  var fileName = exports.dataDir + '/' + id + '.txt';
+
+  exports.readOne(id, function(err, fileText) {
+    if (err) {
+      callback(new Error(`Error reading file id: ${id}`));
+    } else {
+      fs.writeFile(fileName, text, function(err2, newText) {
+        if (err2) {
+          callback(new Error(`Error writing new file: ${id}`));
+        } else {
+          callback(null, { id, text });
+        }
+      });
+    }
+  });
+
 };
 
 exports.delete = (id, callback) => {
