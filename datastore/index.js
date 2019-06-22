@@ -2,6 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const _ = require('underscore');
 const counter = require('./counter');
+const Promise = require('bluebird');
+const readDirPromise = Promise.promisify(fs.readdir);
+const readFilePromise = Promise.promisify(fs.readFile);
+
 
 var items = {};
 
@@ -24,26 +28,57 @@ exports.create = (text, callback) => {
       });
     }
   });
-  
   //items[id] = text;
 };
 
 exports.readAll = (callback) => {
-  fs.readdir(exports.dataDir, (err, files) => {
-    if (err) {
-      callback(err);
-    } else {
+  var final = [];
+  return readDirPromise(exports.dataDir)
+    .then(function(files) {
       var data = [];
+      //why are we timing out, the callback doesn't seem to be called
       for (let i = 0; i < files.length; i++) {
-        var obj = {};
-        obj['id'] = files[i].substring(0, 5);
-        obj['text'] = files[i].substring(0, 5);
-        data.push(obj);
+        var fileName = exports.dataDir + '/' + files[i];
+        data.push(readFilePromise(fileName, 'utf8'));
       }
-    }
-    callback(null, data);
-  });
-  
+      return Promise.all(data).then(function(data2) {
+        //console.log('this is our data:', data2)
+        //console.log('we have read all files')
+        for (var j = 0; j < data2.length; j++) {
+          final.push(
+            {id: files[j],
+              text: data2[j]}
+          )
+        }
+        callback(null, final);
+      });
+    })
+    .catch(function(err) {
+      console.log('we got an error:', err);
+    });
+  // callback(null, final)
+  // fs.readdir(exports.dataDir, (err, files) => {
+  //   if (err) {
+  //     callback(err);
+  //   } else {
+  //     var data = [];
+  //     for (let i = 0; i < files.length; i++) {
+  //       exports.readOne(files[i].substring(0, 5), function(err, todo) {
+  //         if (err) {
+  //           callback(err);
+  //         } else {
+  //           console.log(todo, 'this is our todo <-')
+  //           var obj = {};
+  //           obj['id'] = files[i].substring(0, 5);
+  //           obj['text'] = todo;
+  //           data.push(obj);
+  //         }
+  //       }) 
+  //     }
+  //   }
+  //   callback(null, data);
+  // });
+
 };
 
 exports.readOne = (id, callback) => {
@@ -79,8 +114,8 @@ exports.update = (id, text, callback) => {
 };
 
 exports.delete = (id, callback) => {
-  var fileName = exports.dataDir + '/' + id + '.txt';
-  fs.unlink(fileName, err => {
+  let deleteFileName = exports.dataDir + '/' + id + '.txt';
+  fs.unlink(deleteFileName, err => {
     if (err) {
       callback(err);
     } else {
